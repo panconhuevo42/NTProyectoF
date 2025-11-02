@@ -1,0 +1,16 @@
+<h2>Catálogo de Juegos</h2>
+
+<form (ngSubmit)="crearJuego()">
+  <input [(ngModel)]="nuevoJuego.titulo" name="titulo" placeholder="Título" required />
+  <input [(ngModel)]="nuevoJuego.precio" name="precio" placeholder="Precio" required type="number" />
+  <input [(ngModel)]="nuevoJuego.descripcion" name="descripcion" placeholder="Descripción" />
+  <button type="submit">Agregar Juego</button>
+</form>
+
+<ul>
+  <li *ngFor="let juego of juegos">
+    {{ juego.titulo }} - ${{ juego.precio }}
+    <button (click)="eliminarJuego(juego._id)">Eliminar</button>
+  </li>
+</ul>
+

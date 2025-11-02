@@ -4,7 +4,7 @@ import { inject } from '@angular/core';
 export class GameService {
   private http = inject(HttpClient); // Nuevo sistema de inyección
 
-  private baseUrl = 'http://localhost:5000/api/juegos'; // o usar environment.apiUrl
+  private baseUrl = '/api/games'; // o usar environment.apiUrl
 
   getJuegos() {
     return this.http.get(this.baseUrl);

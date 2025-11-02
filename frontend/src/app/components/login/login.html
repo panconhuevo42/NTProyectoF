@@ -1,1 +1,11 @@
-<p>login works!</p>
+<h2>Login / Registro</h2>
+
+<form (ngSubmit)="login()">
+  <input [(ngModel)]="userData.email" name="email" placeholder="Email" required />
+  <input [(ngModel)]="userData.password" name="password" placeholder="Contraseña" type="password" required />
+  <button type="submit">Iniciar Sesión</button>
+</form>
+
+<button (click)="register()">Registrar</button>
+
+<p>{{ message }}</p>

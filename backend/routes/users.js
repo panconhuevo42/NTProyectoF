@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const ctrl = require('../controllers/usersCtrl');
+const { registerUser, loginUser, getUsers } = require('../controllers/usersCtrl');
 
-// ejemplo de endpoints
-router.get('/', ctrl.getAllUsers);
-router.get('/me', ctrl.getUserInfo);
-router.post('/deposit', ctrl.depositBalance);
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.get('/', getUsers);
 
 module.exports = router;
+
 
 
 

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Preventa - Juegos</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+
+  <!-- Librerías AngularJS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-route.min.js"></script>
+
+  <!-- Archivos JS de tu proyecto -->
+  <script src="/js/app.js"></script>
+  <script src="/js/services.js"></script>
+  <script src="/js/controllers.js"></script>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body ng-controller="JuegosCtrl as vm">
+  <div class="container">
+    <h1>Preventa de Videojuegos</h1>
+
+    <!-- Formulario crear -->
+    <form ng-submit="vm.crearJuego()" name="formJuego">
+      <input ng-model="vm.nuevo.titulo" placeholder="Título" required />
+      <input ng-model="vm.nuevo.plataforma" placeholder="Plataforma" required />
+      <input ng-model="vm.nuevo.precio" type="number" placeholder="Precio" required />
+      <button type="submit">Crear juego</button>
+    </form>
+
+    <!-- Mensajes -->
+    <p ng-if="vm.mensaje">{{vm.mensaje}}</p>
+
+    <!-- Lista de juegos -->
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Plataforma</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <nav>
+          <a href="#!/catalog">Catálogo</a> |
+          <a href="#!/reservations">Reservas</a> |
+          <a href="#!/wallet">Mi saldo</a> |
+          <a href="#!/login">Login</a>
+        </nav>
+
+        <!-- Aquí Angular inyectará las vistas -->
+        <div ng-view></div>
+
+
+        <tr ng-repeat="j in vm.juegos">
+          <td>
+            <span ng-hide="j.editando">{{j.titulo}}</span>
+            <input ng-show="j.editando" ng-model="j.titulo" />
+          </td>
+          <td>
+            <span ng-hide="j.editando">{{j.plataforma}}</span>
+            <input ng-show="j.editando" ng-model="j.plataforma" />
+          </td>
+          <td>
+            <span ng-hide="j.editando">{{j.precio | currency}}</span>
+            <input ng-show="j.editando" type="number" ng-model="j.precio" />
+          </td>
+          <td>
+            <button ng-click="vm.eliminarJuego(j._id)">Eliminar</button>
+            <button ng-click="vm.toggleEditar(j)">{{j.editando ? 'Cancelar' : 'Editar'}}</button>
+            <button ng-show="j.editando" ng-click="vm.actualizarJuego(j)">Guardar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <app-root></app-root>
+
+  
+</body>
+
+</html>

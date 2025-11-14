@@ -1,10 +1,10 @@
 // controllers/authCtrl.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Asegúrate de tener un modelo User
+const User = require('../models/User');
 require('dotenv').config();
 
-// 🔹 Registrar usuario
+// Registrar usuario
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -17,23 +17,32 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear usuario nuevo
+    // Crear usuario nuevo con wallet inicial 0
     const newUser = new User({
       username,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      wallet: 0
     });
 
     await newUser.save();
 
-    res.status(201).json({ msg: 'Usuario registrado correctamente' });
+    res.status(201).json({ 
+      msg: 'Usuario registrado correctamente',
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        wallet: newUser.wallet
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Error en el servidor' });
   }
 };
 
-// 🔹 Login de usuario
+// Login de usuario
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -53,7 +62,16 @@ exports.login = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ msg: 'Login exitoso', token });
+    res.json({ 
+      msg: 'Login exitoso', 
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        wallet: user.wallet
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Error en el servidor' });

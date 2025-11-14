@@ -1,35 +1,61 @@
 const Game = require('../models/Game');
 
-// Crear un nuevo juego
+// Crear un nuevo juego para preventa
 exports.create = async (req, res) => {
   try {
-    console.log('📥 Datos recibidos:', req.body);
-    const { title, price, description } = req.body;
+    const { title, price, description, releaseDate, developer, genre } = req.body;
 
-    if (!title || !price || !description) {
+    if (!title || !price || !description || !releaseDate) {
       return res.status(400).json({ message: 'Faltan campos obligatorios' });
     }
 
-    const newGame = new Game({ title, price, description });
+    // Verificar que la fecha de lanzamiento sea futura
+    if (new Date(releaseDate) <= new Date()) {
+      return res.status(400).json({ message: 'La fecha de lanzamiento debe ser futura' });
+    }
+
+    const newGame = new Game({ 
+      title, 
+      price, 
+      description, 
+      releaseDate,
+      developer: developer || 'Desconocido',
+      genre: genre || 'No especificado',
+      available: true 
+    });
+    
     await newGame.save();
 
-    console.log('✅ Juego creado correctamente:', newGame);
     res.status(201).json(newGame);
   } catch (error) {
-  console.error('❌ Error al crear juego:', error.message);
-  console.error(error.stack);
-  res.status(500).json({ message: 'Error al crear juego', error: error.message });
-}
+    console.error('❌ Error al crear juego:', error);
+    res.status(500).json({ message: 'Error al crear juego', error: error.message });
+  }
 };
 
 // Listar todos los juegos
 exports.list = async (req, res) => {
   try {
-    const games = await Game.find();
+    const games = await Game.find().sort({ releaseDate: 1 });
     res.json(games);
   } catch (error) {
     console.error('❌ Error al listar juegos:', error);
     res.status(500).json({ message: 'Error al listar juegos' });
+  }
+};
+
+// Obtener juegos disponibles para preventa
+exports.getUpcoming = async (req, res) => {
+  try {
+    const games = await Game.find({ 
+      releaseDate: { $gt: new Date() },
+      available: true 
+    }).sort({ releaseDate: 1 });
+    
+    res.json(games);
+  } catch (error) {
+    console.error('❌ Error al obtener juegos próximos:', error);
+    res.status(500).json({ message: 'Error al obtener juegos próximos' });
   }
 };
 

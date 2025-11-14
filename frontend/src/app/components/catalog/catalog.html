@@ -1,16 +1,91 @@
-<h2>Catálogo de Juegos</h2>
+<div class="catalog-container">
+  <!-- Header -->
+  <div class="catalog-header">
+    <h1>Catálogo de Juegos en Preventa</h1>
+    <div class="user-info" *ngIf="isLoggedIn">
+      <span class="balance">Saldo: ${{ userBalance }}</span>
+    </div>
+  </div>
 
-<form (ngSubmit)="crearJuego()">
-  <input [(ngModel)]="nuevoJuego.titulo" name="titulo" placeholder="Título" required />
-  <input [(ngModel)]="nuevoJuego.precio" name="precio" placeholder="Precio" required type="number" />
-  <input [(ngModel)]="nuevoJuego.descripcion" name="descripcion" placeholder="Descripción" />
-  <button type="submit">Agregar Juego</button>
-</form>
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+        placeholder="Buscar juegos..." 
+        class="search-input"
+      >
+    </div>
+    
+    <div class="genre-filters">
+      <label>Filtrar por género:</label>
+      <select [(ngModel)]="selectedGenre" (change)="onGenreChange(selectedGenre)" class="genre-select">
+        <option value="all">Todos los géneros</option>
+        <option *ngFor="let genre of genres.slice(1)" [value]="genre">{{ genre }}</option>
+      </select>
+    </div>
+  </div>
 
-<ul>
-  <li *ngFor="let juego of juegos">
-    {{ juego.titulo }} - ${{ juego.precio }}
-    <button (click)="eliminarJuego(juego._id)">Eliminar</button>
-  </li>
-</ul>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando juegos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadGames()" class="retry-btn">Reintentar</button>
+  </div>
+
+  <!-- Games Grid -->
+  <div *ngIf="!loading && !error" class="games-grid">
+    <div *ngFor="let game of filteredGames" class="game-card">
+      <div class="game-image">
+        <img [src]="game.image || 'assets/default-game.jpg'" [alt]="game.title">
+        <div class="game-badge" [class.coming-soon]="getDaysUntilRelease(game.releaseDate) > 7"
+                              [class.releasing-soon]="getDaysUntilRelease(game.releaseDate) <= 7">
+          {{ getDaysUntilRelease(game.releaseDate) }} días
+        </div>
+      </div>
+      
+      <div class="game-info">
+        <h3 class="game-title">{{ game.title }}</h3>
+        <p class="game-developer">{{ game.developer }}</p>
+        <p class="game-genre">{{ game.genre }}</p>
+        <p class="game-description">{{ game.description }}</p>
+        
+        <div class="game-details">
+          <div class="game-price">${{ game.price }}</div>
+          <div class="release-date">
+            Lanzamiento: {{ game.releaseDate | date:'dd/MM/yyyy' }}
+          </div>
+        </div>
+
+        <div class="game-actions">
+          <button 
+            *ngIf="isGameAvailable(game)"
+            (click)="reserveGame(game)"
+            [disabled]="!isLoggedIn || userBalance < game.price"
+            class="reserve-btn"
+            [class.disabled]="!isLoggedIn || userBalance < game.price">
+            {{ !isLoggedIn ? 'Inicia sesión' : userBalance < game.price ? 'Saldo insuficiente' : 'Reservar' }}
+          </button>
+          
+          <div *ngIf="!isGameAvailable(game)" class="not-available">
+            No disponible para reserva
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && filteredGames.length === 0" class="empty-state">
+    <h3>No se encontraron juegos</h3>
+    <p>Intenta con otros términos de búsqueda o filtros</p>
+  </div>
+</div>
 

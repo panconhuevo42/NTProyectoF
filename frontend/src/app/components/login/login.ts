@@ -9,16 +9,26 @@ import { AuthService } from '../../services/auth';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.html',
-  styleUrls: ['./login.css'] 
+  templateUrl: './login.html'
+  // ❌ ELIMINA styleUrls si usas CSS global
 })
 export class LoginComponent {
   private auth = inject(AuthService);
-  private router = inject(Router); //  Para navegación
+  private router = inject(Router);
   
   userData = { email: '', password: '' };
   message = '';
-  loading = false; // Estado de carga
+  loading = false;
+  isLoginMode = true; // ✅ Para cambiar entre login/registro
+
+  // ✅ Método único para submit
+  onSubmit() {
+    if (this.isLoginMode) {
+      this.login();
+    } else {
+      this.register();
+    }
+  }
 
   login() {
     this.loading = true;
@@ -26,17 +36,17 @@ export class LoginComponent {
     
     this.auth.login(this.userData).subscribe({
       next: (res: any) => {
-        this.auth.setUser(res.user, res.token);
-        this.message = 'Inicio de sesión correcto';
+        this.message = '✅ Inicio de sesión correcto';
         this.loading = false;
         
-        // Redirigir al catálogo después de login exitoso
+        // Redirigir al catálogo
         setTimeout(() => {
           this.router.navigate(['/catalog']);
         }, 1000);
       },
       error: (err) => {
-        this.message = err.error?.msg || 'Error al iniciar sesión';
+        console.error('Login error:', err);
+        this.message = err.error?.message || err.error?.msg || 'Error al iniciar sesión';
         this.loading = false;
       }
     });
@@ -48,20 +58,29 @@ export class LoginComponent {
     
     this.auth.register(this.userData).subscribe({
       next: (res: any) => {
-        this.message = 'Usuario registrado correctamente';
+        this.message = '✅ Usuario registrado correctamente';
         this.loading = false;
         
         // Auto-login después de registro
-        // this.auth.setUser(res.user, res.token);
+        setTimeout(() => {
+          this.router.navigate(['/catalog']);
+        }, 1000);
       },
       error: (err) => {
-        this.message = err.error?.msg || 'Error al registrarse';
+        console.error('Register error:', err);
+        this.message = err.error?.message || err.error?.msg || 'Error al registrarse';
         this.loading = false;
       }
     });
   }
 
-  // Método para limpiar formulario
+  // ✅ Cambiar entre login y registro
+  switchMode() {
+    this.isLoginMode = !this.isLoginMode;
+    this.message = '';
+    this.userData = { email: '', password: '' };
+  }
+
   clearForm() {
     this.userData = { email: '', password: '' };
     this.message = '';

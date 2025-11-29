@@ -1,92 +1,85 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+// frontend/src/app/components/login/login.ts
+import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router'; 
+import { AuthService } from '../../services/auth';
 
-const userSchema = new mongoose.Schema({
-  username: { 
-    type: String, 
-    required: [true, 'El nombre de usuario es requerido'],
-    trim: true,
-    minlength: [3, 'El nombre de usuario debe tener al menos 3 caracteres'],
-    maxlength: [30, 'El nombre de usuario no puede exceder 30 caracteres']
-  },
-  email: { 
-    type: String, 
-    required: [true, 'El email es requerido'],
-    unique: true,
-    trim: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingresa un email válido']
-  },
-  password: { 
-    type: String, 
-    required: [true, 'La contraseña es requerida'],
-    minlength: [6, 'La contraseña debe tener al menos 6 caracteres']
-  },
-  wallet: {  // ✅ Cambiado de 'saldo' a 'wallet' para consistencia
-    type: Number, 
-    default: 0,
-    min: [0, 'El saldo no puede ser negativo']
-  },
-  role: {  // ✅ Cambiado de 'rol' a 'role' para consistencia
-    type: String, 
-    enum: {
-      values: ['client', 'admin'],
-      message: 'Rol inválido'
-    },
-    default: 'client'
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './login.html'
+})
+export class LoginComponent {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  
+  userData = { username: '', email: '', password: '' };
+  message = '';
+  loading = false;
+  isLoginMode = true;
+
+  onSubmit() {
+    if (this.isLoginMode) {
+      this.login();
+    } else {
+      this.register();
+    }
   }
-}, { 
-  timestamps: true 
-});
 
-// Encriptar la contraseña antes de guardar
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
+  login() {
+    this.loading = true;
+    this.message = '';
+    
+    const loginData = {
+      email: this.userData.email,
+      password: this.userData.password
+    };
+    
+    this.auth.login(loginData).subscribe({
+      next: (res: any) => {
+        this.message = '✅ Inicio de sesión correcto';
+        this.loading = false;
+        setTimeout(() => this.router.navigate(['/catalog']), 1000);
+      },
+      error: (err) => {
+        this.message = err.error?.msg || 'Error al iniciar sesión';
+        this.loading = false;
+      }
+    });
   }
-});
 
-// Comparar contraseñas al hacer login
-userSchema.methods.comparePassword = async function (passwordInput) {
-  return bcrypt.compare(passwordInput, this.password);
-};
-
-// Método para verificar si tiene saldo suficiente
-userSchema.methods.hasSufficientBalance = function (amount) {
-  return this.wallet >= amount;
-};
-
-// Método para agregar saldo
-userSchema.methods.addToWallet = function (amount) {
-  if (amount <= 0) throw new Error('El monto debe ser positivo');
-  this.wallet += amount;
-  return this.save();
-};
-
-// Método para descontar saldo
-userSchema.methods.deductFromWallet = function (amount) {
-  if (amount <= 0) throw new Error('El monto debe ser positivo');
-  if (!this.hasSufficientBalance(amount)) {
-    throw new Error('Saldo insuficiente');
+  register() {
+    this.loading = true;
+    this.message = '';
+    
+    this.auth.register(this.userData).subscribe({
+      next: (res: any) => {
+        this.message = '✅ Usuario registrado correctamente';
+        this.loading = false;
+        setTimeout(() => this.router.navigate(['/catalog']), 1000);
+      },
+      error: (err) => {
+        this.message = err.error?.msg || 'Error al registrarse';
+        this.loading = false;
+      }
+    });
   }
-  this.wallet -= amount;
-  return this.save();
-};
 
-// Índices para mejor performance
-userSchema.index({ email: 1 });
-userSchema.index({ role: 1 });
+  switchMode() {
+    this.isLoginMode = !this.isLoginMode;
+    this.message = '';
+    this.userData = { 
+      username: this.isLoginMode ? '' : this.userData.username, 
+      email: this.userData.email, 
+      password: this.userData.password 
+    };
+  }
 
-// Para no enviar la contraseña en las respuestas
-userSchema.methods.toJSON = function() {
-  const userObject = this.toObject();
-  delete userObject.password;
-  return userObject;
-};
-
-module.exports = mongoose.model('User', userSchema);
+  // ✅ CORREGIDO - Limpiar todos los campos
+  clearForm() {
+    this.userData = { username: '', email: '', password: '' };
+    this.message = '';
+  }
+}

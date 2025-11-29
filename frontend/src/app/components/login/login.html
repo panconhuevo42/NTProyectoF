@@ -1,66 +1,68 @@
 <!-- frontend/src/app/components/login/login.html -->
-<div class="login-container">
-  <h2>Iniciar Sesión / Registro</h2>
+<div class="auth-container">
+  <div class="auth-card">
+    <h2 class="auth-title">
+      {{ isLoginMode ? 'Iniciar Sesión' : 'Registrarse' }}
+    </h2>
 
-  <form (ngSubmit)="login()" #loginForm="ngForm">
-    <div class="form-group">
-      <input 
-        [(ngModel)]="userData.email" 
-        name="email" 
-        placeholder="Email" 
-        type="email"
-        required 
-        class="form-input"
-      />
-    </div>
-    
-    <div class="form-group">
-      <input 
-        [(ngModel)]="userData.password" 
-        name="password" 
-        placeholder="Contraseña" 
-        type="password" 
-        required
-        minlength="6"
-        class="form-input"
-      />
-    </div>
+    <form (ngSubmit)="onSubmit()" #authForm="ngForm" class="auth-form">
+      
+      
+      <div class="form-group" *ngIf="!isLoginMode">
+        <input 
+          [(ngModel)]="userData.username" 
+          name="username" 
+          placeholder="Nombre de usuario" 
+          type="text"
+          required 
+          minlength="3"
+          class="form-control"
+        />
+      </div>
+      
+      <div class="form-group">
+        <input 
+          [(ngModel)]="userData.email" 
+          name="email" 
+          placeholder="Email" 
+          type="email"
+          required 
+          class="form-control"
+        />
+      </div>
+      
+      <div class="form-group">
+        <input 
+          [(ngModel)]="userData.password" 
+          name="password" 
+          placeholder="Contraseña" 
+          type="password" 
+          required
+          minlength="6"
+          class="form-control"
+        />
+      </div>
 
-    <div class="button-group">
       <button 
         type="submit" 
-        [disabled]="loading || !loginForm.valid"
-        class="btn btn-primary"
+        [disabled]="loading || !authForm.valid"
+        class="auth-btn"
       >
-        {{ loading ? 'Cargando...' : 'Iniciar Sesión' }}
+        {{ loading ? 'Cargando...' : (isLoginMode ? 'Iniciar Sesión' : 'Registrarse') }}
       </button>
-      
-      <button 
-        type="button" 
-        (click)="register()" 
-        [disabled]="loading || !loginForm.valid"
-        class="btn btn-secondary"
-      >
-        {{ loading ? 'Cargando...' : 'Registrarse' }}
-      </button>
+    </form>
 
-      <button 
-        type="button" 
-        (click)="clearForm()" 
-        class="btn btn-clear"
-      >
-        Limpiar
-      </button>
+    <div *ngIf="message" class="auth-error">
+      {{ message }}
     </div>
-  </form>
 
-  <!-- Mensajes de estado -->
-  <div *ngIf="message" class="message" [class.error]="message.includes('Error')">
-    {{ message }}
-  </div>
-
-  <!-- Información adicional -->
-  <div class="info">
-    <p>¿No tienes cuenta? Regístrate con el mismo formulario.</p>
+    <div class="auth-switch">
+      <span>
+        {{ isLoginMode ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+        <a (click)="switchMode()" class="auth-link">
+          {{ isLoginMode ? 'Regístrate' : 'Inicia sesión' }}
+        </a>
+      </span>
+    </div>
   </div>
 </div>

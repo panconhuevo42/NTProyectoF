@@ -1,13 +1,24 @@
+// frontend/src/app/services/game.ts
+
+
 import { HttpClient } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
-export class GameService {
-  private http = inject(HttpClient); // Nuevo sistema de inyección
-
-  private baseUrl = '/api/games'; // o usar environment.apiUrl
+@Injectable({ providedIn: 'root' })
+export class GameService {  // ✅ CAMBIAR: GameService (no Game)
+  private http = inject(HttpClient);
+  private baseUrl = '/api/games';
 
   getJuegos() {
     return this.http.get(this.baseUrl);
+  }
+
+  getProximosJuegos() {
+    return this.http.get(`${this.baseUrl}/upcoming`);
+  }
+
+  getJuegoPorId(id: string) {
+    return this.http.get(`${this.baseUrl}/${id}`);
   }
 
   createJuego(data: any) {
@@ -22,4 +33,3 @@ export class GameService {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
 }
-

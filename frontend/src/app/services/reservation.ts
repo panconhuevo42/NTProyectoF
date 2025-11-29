@@ -1,31 +1,27 @@
+// frontend/src/app/services/reservation.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ReservationService {
+export class ReservationService {  // ✅ CAMBIAR: ReservationService (no Reservation)
   private http = inject(HttpClient);
-  private baseUrl = '/api/reservations'; // usa '/api/reservations' si en backend está en inglés
+  private baseUrl = '/api/reservations';
 
-  // Obtener todas las reservas
-  getReservas(): Observable<any> {
-    return this.http.get(this.baseUrl);
+  getReservasUsuario() {
+    return this.http.get(`${this.baseUrl}/my-reservations`);
   }
 
-  // Crear una nueva reserva
-  crearReserva(data: any): Observable<any> {
+  crearReserva(data: { userId: string, gameId: string }) {
     return this.http.post(this.baseUrl, data);
   }
 
-  // Actualizar una reserva existente
-  actualizarReserva(id: string, data: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, data);
+  cancelarReserva(id: string) {
+    return this.http.post(`${this.baseUrl}/${id}/cancel`, {});
   }
 
-  // Eliminar una reserva
-  eliminarReserva(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`);
+  getTodasReservas() {
+    return this.http.get(this.baseUrl);
   }
 }

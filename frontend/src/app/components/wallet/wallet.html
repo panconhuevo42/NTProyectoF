@@ -1,1 +1,110 @@
-<p>wallet works!</p>
+<!-- frontend/src/app/components/wallet/wallet.html -->
+
+
+<div class="wallet-container">
+  <!-- Header -->
+  <div class="wallet-header">
+    <h1>Mi Wallet</h1>
+    <div class="balance-display">
+      <div class="balance-amount">${{ userBalance }}</div>
+      <div class="balance-label">Saldo Actual</div>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="message" class="message" [class]="messageType">
+    {{ message }}
+  </div>
+
+  <!-- Sección de Recarga -->
+  <div class="recharge-section">
+    <h2>Recargar Saldo</h2>
+    
+    <!-- Recarga Rápida -->
+    <div class="quick-recharge">
+      <h3>Recarga Rápida</h3>
+      <div class="quick-amounts">
+        <button 
+          *ngFor="let amount of [10, 20, 50, 100]" 
+          (click)="quickRecharge(amount)"
+          class="quick-btn"
+        >
+          ${{ amount }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Recarga Personalizada -->
+    <div class="custom-recharge">
+      <h3>Recarga Personalizada</h3>
+      <div class="recharge-form">
+        <div class="input-group">
+          <label for="amount">Monto:</label>
+          <input 
+            type="number" 
+            id="amount"
+            [(ngModel)]="rechargeAmount" 
+            placeholder="Ingresa el monto"
+            min="1"
+            max="1000"
+            class="amount-input"
+          >
+          <span class="currency-symbol">$</span>
+        </div>
+        
+        <button 
+          (click)="rechargeWallet()"
+          [disabled]="loading || rechargeAmount <= 0 || rechargeAmount > 1000"
+          class="recharge-btn"
+        >
+          {{ loading ? 'Procesando...' : 'Recargar Wallet' }}
+        </button>
+      </div>
+      
+      <div class="recharge-info">
+        <p>💡 Monto mínimo: $1 | Monto máximo: $1000</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de Transacciones -->
+  <div class="transaction-history">
+    <h2>Historial de Transacciones</h2>
+    
+    <div *ngIf="transactionHistory.length === 0" class="empty-history">
+      <p>No hay transacciones registradas</p>
+    </div>
+
+    <div *ngIf="transactionHistory.length > 0" class="transactions-list">
+      <div *ngFor="let transaction of transactionHistory" class="transaction-item">
+        <div class="transaction-icon">
+          {{ getTransactionIcon(transaction) }}
+        </div>
+        
+        <div class="transaction-details">
+          <div class="transaction-description">
+            {{ transaction.description }}
+          </div>
+          <div class="transaction-date">
+            {{ transaction.date | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+        </div>
+        
+        <div class="transaction-amount" [class]="getTransactionClass(transaction)">
+          {{ transaction.amount > 0 ? '+' : '' }}${{ transaction.amount }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información Adicional -->
+  <div class="wallet-info">
+    <h3>💡 Información Importante</h3>
+    <ul>
+      <li>El saldo de tu wallet se utiliza automáticamente para realizar reservas</li>
+      <li>Al cancelar una reserva, el monto se reembolsa automáticamente a tu wallet</li>
+      <li>El saldo no expira y puede ser utilizado en cualquier momento</li>
+      <li>Para consultas o problemas, contacta con soporte</li>
+    </ul>
+  </div>
+</div>

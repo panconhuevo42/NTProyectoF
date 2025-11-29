@@ -1,18 +1,19 @@
+// frontend/src/app/components/reservations/reservations.spec.ts
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReservationsComponent } from './reservations';
 
-import { Reservations } from './reservations';
-
-describe('Reservations', () => {
-  let component: Reservations;
-  let fixture: ComponentFixture<Reservations>;
+describe('ReservationsComponent', () => {  // ✅ Cambiar nombre
+  let component: ReservationsComponent;    // ✅ Cambiar tipo
+  let fixture: ComponentFixture<ReservationsComponent>; // ✅ Cambiar tipo
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Reservations]
+      imports: [ReservationsComponent]  // ✅ Cambiar import
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Reservations);
+    fixture = TestBed.createComponent(ReservationsComponent); // ✅ Cambiar componente
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

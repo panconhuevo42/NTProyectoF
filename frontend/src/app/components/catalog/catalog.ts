@@ -1,9 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+// frontend/src/app/components/catalog/catalog.ts
+
+
+// frontend/src/app/components/catalog/catalog.ts
+import { Component, OnInit } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { GameService } from '../../../services/game.service';
-import { AuthService } from '../../../services/auth.service';
-import { ReservationService } from '../../../services/reservation.service';
+import { FormsModule } from '@angular/forms';
+
+import { GameService } from '../../services/game';
+import { AuthService } from '../../services/auth';
+import { ReservationService } from '../../services/reservation';
 
 export interface Game {
   _id: string;
@@ -17,14 +23,15 @@ export interface Game {
   image?: string;
 }
 
+// ✅ AGREGAR @Component DECORATOR
 @Component({
   selector: 'app-catalog',
   standalone: true,
-  imports: [CommonModule, RouterModule],
-  templateUrl: './catalog.component.html',
-  styleUrls: ['./catalog.component.css']
+  imports: [CommonModule, RouterModule, FormsModule],
+  templateUrl: './catalog.html',
+  styleUrls: ['./catalog.css']
 })
-export class CatalogComponent implements OnInit {
+export class CatalogComponent implements OnInit { // ✅ CORREGIR nombre de clase
   games: Game[] = [];
   filteredGames: Game[] = [];
   loading: boolean = true;
@@ -35,7 +42,7 @@ export class CatalogComponent implements OnInit {
 
   constructor(
     private gameService: GameService,
-    private authService: AuthService,
+    private authService: AuthService,  
     private reservationService: ReservationService
   ) {}
 
@@ -45,8 +52,8 @@ export class CatalogComponent implements OnInit {
 
   loadGames(): void {
     this.loading = true;
-    this.gameService.getUpcomingGames().subscribe({
-      next: (games) => {
+    this.gameService.getProximosJuegos().subscribe({
+      next: (games: any) => {
         this.games = games;
         this.filteredGames = games;
         this.loading = false;
@@ -78,24 +85,32 @@ export class CatalogComponent implements OnInit {
   }
 
   reserveGame(game: Game): void {
-    if (!this.authService.isLoggedIn()) {
+    const currentUser = this.authService.user();
+    if (!currentUser) {
       alert('Debes iniciar sesión para realizar una reserva');
       return;
     }
 
-    if (!this.authService.hasSufficientBalance(game.price)) {
+    if (currentUser.wallet < game.price) {
       alert('Saldo insuficiente. Por favor, recarga tu wallet.');
       return;
     }
 
     if (confirm(`¿Reservar "${game.title}" por $${game.price}?`)) {
-      this.reservationService.createReservation(game._id).subscribe({
-        next: (response) => {
+      this.reservationService.crearReserva({
+        userId: currentUser.id,
+        gameId: game._id
+      }).subscribe({
+        next: (response: any) => {
           alert('¡Reserva realizada con éxito!');
-          this.loadGames(); // Recargar para actualizar saldo
+          // Actualizar usuario local con nuevo saldo
+          if (response.reservation && response.reservation.userId) {
+            this.authService.user.set(response.reservation.userId);
+          }
+          this.loadGames();
         },
         error: (error) => {
-          alert('Error al realizar la reserva: ' + error.error.message);
+          alert('Error al realizar la reserva: ' + (error.error?.message || 'Error desconocido'));
         }
       });
     }
@@ -113,10 +128,10 @@ export class CatalogComponent implements OnInit {
   }
 
   get userBalance(): number {
-    return this.authService.getCurrentUser()?.wallet || 0;
+    return this.authService.user()?.wallet || 0;
   }
 
   get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return this.authService.user() !== null;
   }
 }

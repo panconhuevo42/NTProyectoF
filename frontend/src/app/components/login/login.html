@@ -1,11 +1,66 @@
-<h2>Login / Registro</h2>
+<!-- frontend/src/app/components/login/login.html -->
+<div class="login-container">
+  <h2>Iniciar Sesión / Registro</h2>
 
-<form (ngSubmit)="login()">
-  <input [(ngModel)]="userData.email" name="email" placeholder="Email" required />
-  <input [(ngModel)]="userData.password" name="password" placeholder="Contraseña" type="password" required />
-  <button type="submit">Iniciar Sesión</button>
-</form>
+  <form (ngSubmit)="login()" #loginForm="ngForm">
+    <div class="form-group">
+      <input 
+        [(ngModel)]="userData.email" 
+        name="email" 
+        placeholder="Email" 
+        type="email"
+        required 
+        class="form-input"
+      />
+    </div>
+    
+    <div class="form-group">
+      <input 
+        [(ngModel)]="userData.password" 
+        name="password" 
+        placeholder="Contraseña" 
+        type="password" 
+        required
+        minlength="6"
+        class="form-input"
+      />
+    </div>
 
-<button (click)="register()">Registrar</button>
+    <div class="button-group">
+      <button 
+        type="submit" 
+        [disabled]="loading || !loginForm.valid"
+        class="btn btn-primary"
+      >
+        {{ loading ? 'Cargando...' : 'Iniciar Sesión' }}
+      </button>
+      
+      <button 
+        type="button" 
+        (click)="register()" 
+        [disabled]="loading || !loginForm.valid"
+        class="btn btn-secondary"
+      >
+        {{ loading ? 'Cargando...' : 'Registrarse' }}
+      </button>
 
-<p>{{ message }}</p>
+      <button 
+        type="button" 
+        (click)="clearForm()" 
+        class="btn btn-clear"
+      >
+        Limpiar
+      </button>
+    </div>
+  </form>
+
+  <!-- Mensajes de estado -->
+  <div *ngIf="message" class="message" [class.error]="message.includes('Error')">
+    {{ message }}
+  </div>
+
+  <!-- Información adicional -->
+  <div class="info">
+    <p>¿No tienes cuenta? Regístrate con el mismo formulario.</p>
+  </div>
+</div>

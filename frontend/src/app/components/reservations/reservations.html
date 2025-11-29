@@ -1,1 +1,102 @@
-<p>reservations works!</p>
+<!-- frontend/src/app/components/reservations/reservations.html -->
+<div class="reservations-container">
+  <!-- Header -->
+  <div class="reservations-header">
+    <h1>Mis Reservas</h1>
+    <div class="user-stats">
+      <div class="stat">
+        <span class="stat-label">Saldo Actual:</span>
+        <span class="stat-value">${{ userBalance }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Reservas Activas:</span>
+        <span class="stat-value">{{ activeReservationsCount }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Total Gastado:</span>
+        <span class="stat-value">${{ totalSpent }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <label>Filtrar por estado:</label>
+    <select [(ngModel)]="filteredStatus" class="status-filter">
+      <option value="all">Todas las reservas</option>
+      <option value="active">Activas</option>
+      <option value="cancelled">Canceladas</option>
+      <option value="completed">Completadas</option>
+    </select>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando reservas...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadReservations()" class="retry-btn">Reintentar</button>
+  </div>
+
+  <!-- Reservations List -->
+  <div *ngIf="!loading && !error" class="reservations-list">
+    <div *ngFor="let reservation of filteredReservations" class="reservation-card">
+      <div class="reservation-header">
+        <h3 class="game-title">{{ reservation.gameId.title }}</h3>
+        <span class="status-badge" [class]="getStatusBadgeClass(reservation.status)">
+          {{ getStatusText(reservation.status) }}
+        </span>
+      </div>
+
+      <div class="reservation-details">
+        <div class="detail">
+          <span class="label">Desarrollador:</span>
+          <span class="value">{{ reservation.gameId.developer }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Precio:</span>
+          <span class="value">${{ reservation.amount }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Fecha de Reserva:</span>
+          <span class="value">{{ reservation.reservationDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Lanzamiento:</span>
+          <span class="value">{{ reservation.gameId.releaseDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="reservation-actions">
+        <button 
+          *ngIf="canCancel(reservation)"
+          (click)="cancelReservation(reservation)"
+          class="cancel-btn"
+        >
+          Cancelar Reserva
+        </button>
+        
+        <div *ngIf="reservation.status === 'cancelled'" class="cancelled-info">
+          Cancelada el: {{ reservation.cancelledAt | date:'dd/MM/yyyy' }}
+        </div>
+        
+        <div *ngIf="reservation.status === 'completed'" class="completed-info">
+          Completada el: {{ reservation.completedAt | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && filteredReservations.length === 0" class="empty-state">
+    <h3>No se encontraron reservas</h3>
+    <p *ngIf="filteredStatus !== 'all'">No tienes reservas con estado "{{ getStatusText(filteredStatus) }}"</p>
+    <p *ngIf="filteredStatus === 'all'">Aún no has realizado ninguna reserva</p>
+    <a routerLink="/catalog" class="browse-btn">Explorar Catálogo</a>
+  </div>
+</div>
